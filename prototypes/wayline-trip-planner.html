@@ -1,0 +1,1237 @@
+<title>Wayline — your holiday on one clean timetable</title>
+<style>
+  :root{
+    --bg:#EDF2F0;
+    --card:#FBFDFC;
+    --card-2:#F3F7F5;
+    --ink:#14333B;
+    --muted:#5B7470;
+    --faint:#8CA29D;
+    --line:#CBDAD5;
+    --line-soft:#DDE7E3;
+    --tide:#0E7C6B;
+    --tide-ink:#0A5A4E;
+    --tide-soft:rgba(14,124,107,.10);
+    --sun:#E8A13A;
+    --sun-ink:#8A5A12;
+    --sun-soft:rgba(232,161,58,.14);
+    --bad:#C4452D;
+    --bad-soft:rgba(196,69,45,.10);
+    --shadow:0 10px 30px rgba(20,51,59,.10);
+    --rail:#B9CCC6;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0C1D20;
+      --card:#12282B;
+      --card-2:#0F2225;
+      --ink:#DCE9E5;
+      --muted:#93ACA6;
+      --faint:#6E8983;
+      --line:#24413F;
+      --line-soft:#1C3634;
+      --tide:#3BC2A9;
+      --tide-ink:#8FDECC;
+      --tide-soft:rgba(59,194,169,.12);
+      --sun:#EDB05B;
+      --sun-ink:#F0C481;
+      --sun-soft:rgba(237,176,91,.12);
+      --bad:#E5765F;
+      --bad-soft:rgba(229,118,95,.12);
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --rail:#2E4C49;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#EDF2F0; --card:#FBFDFC; --card-2:#F3F7F5; --ink:#14333B; --muted:#5B7470;
+    --faint:#8CA29D; --line:#CBDAD5; --line-soft:#DDE7E3; --tide:#0E7C6B; --tide-ink:#0A5A4E;
+    --tide-soft:rgba(14,124,107,.10); --sun:#E8A13A; --sun-ink:#8A5A12; --sun-soft:rgba(232,161,58,.14);
+    --bad:#C4452D; --bad-soft:rgba(196,69,45,.10); --shadow:0 10px 30px rgba(20,51,59,.10); --rail:#B9CCC6;
+  }
+  :root[data-theme="dark"]{
+    --bg:#0C1D20; --card:#12282B; --card-2:#0F2225; --ink:#DCE9E5; --muted:#93ACA6;
+    --faint:#6E8983; --line:#24413F; --line-soft:#1C3634; --tide:#3BC2A9; --tide-ink:#8FDECC;
+    --tide-soft:rgba(59,194,169,.12); --sun:#EDB05B; --sun-ink:#F0C481; --sun-soft:rgba(237,176,91,.12);
+    --bad:#E5765F; --bad-soft:rgba(229,118,95,.12); --shadow:0 10px 30px rgba(0,0,0,.35); --rail:#2E4C49;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    *, *::before, *::after{ animation:none !important; transition:none !important; }
+  }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:ui-sans-serif, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size:16px;
+    line-height:1.55;
+    padding-bottom:120px;
+  }
+  .disp{
+    font-family:"Avenir Next Condensed","Helvetica Neue Condensed","Arial Narrow",ui-sans-serif,sans-serif;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+  .mono{
+    font-family:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    font-variant-numeric:tabular-nums;
+  }
+  .wrap{ max-width:1040px; margin:0 auto; padding:0 20px; }
+
+  /* ---------- header ---------- */
+  header{ padding:34px 0 6px; }
+  .brandrow{ display:flex; align-items:center; gap:10px; }
+  .brandmark{ flex:none; }
+  .brand{ font-size:22px; letter-spacing:.10em; }
+  .brand em{ font-style:normal; color:var(--tide); }
+  .hero h1{
+    margin:26px 0 0;
+    font-size:clamp(34px,6vw,58px);
+    line-height:1.02;
+    text-wrap:balance;
+    max-width:16ch;
+  }
+  .hero h1 .amp{ color:var(--tide); }
+  .hero p.lede{
+    margin:14px 0 0;
+    max-width:56ch;
+    color:var(--muted);
+    font-size:17px;
+  }
+  .routeline{ margin-top:26px; width:100%; height:34px; display:block; }
+
+  /* ---------- shared card / section ---------- */
+  section{ margin-top:34px; }
+  section[hidden]{ display:none; }
+  .station{
+    display:flex; align-items:baseline; gap:12px;
+    margin-bottom:14px;
+  }
+  .station .stopnum{
+    flex:none;
+    width:30px; height:30px; border-radius:50%;
+    background:var(--tide); color:var(--card);
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size:15px; font-weight:700;
+    transform:translateY(5px);
+  }
+  .station h2{ margin:0; font-size:26px; letter-spacing:.05em; }
+  .station .hint{ color:var(--muted); font-size:14px; }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    box-shadow:var(--shadow);
+  }
+
+  /* ---------- setup ---------- */
+  .setup{ padding:24px; display:grid; grid-template-columns:1.2fr 1fr; gap:28px; }
+  @media (max-width:760px){ .setup{ grid-template-columns:1fr; } }
+  .field{ margin-bottom:20px; }
+  .field:last-child{ margin-bottom:0; }
+  label.flabel, .flabel{
+    display:block;
+    font-size:12.5px; font-weight:600;
+    letter-spacing:.09em; text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:8px;
+  }
+  input[type=text], input[type=number]{
+    width:100%;
+    padding:11px 12px;
+    font:inherit;
+    color:var(--ink);
+    background:var(--card-2);
+    border:1px solid var(--line);
+    border-radius:7px;
+  }
+  input[type=text]:focus-visible, input[type=number]:focus-visible,
+  button:focus-visible, input[type=range]:focus-visible{
+    outline:2px solid var(--tide);
+    outline-offset:2px;
+  }
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .chip{
+    font:inherit; font-size:14px;
+    padding:6px 12px;
+    border-radius:99px;
+    border:1px solid var(--line);
+    background:var(--card);
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .chip:hover{ border-color:var(--tide); }
+  .chip[aria-pressed="true"]{
+    background:var(--tide); border-color:var(--tide); color:var(--card);
+  }
+  .seg{
+    display:inline-flex;
+    border:1px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+    background:var(--card-2);
+  }
+  .seg button{
+    font:inherit; font-size:14.5px;
+    padding:9px 16px;
+    border:none; background:transparent; color:var(--muted);
+    cursor:pointer;
+    border-right:1px solid var(--line);
+  }
+  .seg button:last-child{ border-right:none; }
+  .seg button[aria-pressed="true"]{
+    background:var(--tide); color:var(--card); font-weight:600;
+  }
+  .budgetrow{ display:flex; align-items:center; gap:14px; }
+  .budgetrow .bval{ font-size:26px; font-weight:600; min-width:5ch; }
+  input[type=range]{ flex:1; accent-color:var(--tide); }
+  .mealtoggles{ display:flex; flex-wrap:wrap; gap:8px; }
+  .mealtoggles .chip[aria-pressed="true"]{ background:var(--sun-soft); color:var(--ink); border-color:var(--sun); }
+  .mealtoggles .chip[aria-pressed="true"]::before{ content:"✓ "; color:var(--sun-ink); }
+  .cta{
+    font:inherit; font-size:16px; font-weight:600;
+    padding:13px 26px;
+    border:none; border-radius:8px;
+    background:var(--tide); color:#FBFDFC;
+    cursor:pointer;
+  }
+  .cta:hover{ background:var(--tide-ink); }
+  .cta:disabled{ opacity:.5; cursor:default; }
+  .cta.secondary{
+    background:transparent; color:var(--tide);
+    border:1px solid var(--tide);
+  }
+  .cta.secondary:hover{ background:var(--tide-soft); }
+  .setup-cta{ margin-top:6px; display:flex; align-items:center; gap:14px; }
+  .setup-cta .note{ font-size:13px; color:var(--faint); }
+
+  /* ---------- pick activities ---------- */
+  .pickhead{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:16px; }
+  .pickhead .capacity{ color:var(--muted); font-size:14.5px; }
+  .filters{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(236px,1fr));
+    gap:14px;
+  }
+  .act{
+    text-align:left;
+    font:inherit; color:var(--ink);
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px 16px 14px;
+    cursor:pointer;
+    display:flex; flex-direction:column; gap:8px;
+    position:relative;
+  }
+  .act:hover{ border-color:var(--tide); }
+  .act[aria-pressed="true"]{
+    border-color:var(--tide);
+    box-shadow:inset 0 0 0 1.5px var(--tide);
+    background:var(--tide-soft);
+  }
+  .act .tick{
+    position:absolute; top:12px; right:12px;
+    width:22px; height:22px; border-radius:50%;
+    border:1.5px solid var(--line);
+    color:transparent;
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; flex:none;
+  }
+  .act[aria-pressed="true"] .tick{ background:var(--tide); border-color:var(--tide); color:var(--card); }
+  .act .aname{ font-weight:650; font-size:16px; line-height:1.3; padding-right:26px; }
+  .act .anote{ font-size:13.5px; color:var(--muted); flex:1; }
+  .act .ameta{
+    display:flex; align-items:center; gap:10px;
+    font-size:13px; color:var(--muted);
+    border-top:1px dashed var(--line);
+    padding-top:9px;
+  }
+  .act .ameta .price{ color:var(--ink); font-weight:600; margin-left:auto; font-size:14px; }
+  .cattag{
+    font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    padding:2px 7px; border-radius:4px;
+    background:var(--card-2); border:1px solid var(--line-soft);
+    color:var(--muted);
+  }
+  .act .zone{ font-size:12px; color:var(--faint); }
+
+  /* ---------- itinerary ---------- */
+  .planwrap{ display:flex; flex-direction:column; gap:18px; }
+  .daycard{ padding:0; overflow:hidden; }
+  .dayhead{
+    display:flex; align-items:baseline; gap:12px;
+    padding:16px 22px 12px;
+    border-bottom:1px solid var(--line-soft);
+    background:var(--card-2);
+  }
+  .dayhead h3{ margin:0; font-size:20px; letter-spacing:.06em; }
+  .dayhead .daysum{ margin-left:auto; font-size:13px; color:var(--muted); }
+  .timeline{ list-style:none; margin:0; padding:14px 22px 20px; }
+  .tl-row{
+    display:grid;
+    grid-template-columns:56px 26px 1fr;
+    column-gap:10px;
+  }
+  .tl-time{ font-size:14px; color:var(--muted); padding-top:2px; text-align:right; }
+  .tl-rail{ position:relative; }
+  .tl-rail::before{
+    content:""; position:absolute; left:50%; top:0; bottom:0;
+    width:2px; margin-left:-1px;
+    background:var(--rail);
+  }
+  .tl-row:first-child .tl-rail::before{ top:10px; }
+  .tl-row:last-child .tl-rail::before{ bottom:auto; height:10px; }
+  .tl-dot{
+    position:absolute; left:50%; top:6px;
+    width:12px; height:12px; margin-left:-6px;
+    border-radius:50%;
+    background:var(--tide);
+    border:2px solid var(--card);
+    box-shadow:0 0 0 1.5px var(--tide);
+  }
+  .tl-row.meal .tl-dot{ background:var(--sun); box-shadow:0 0 0 1.5px var(--sun); }
+  .tl-row.quiet .tl-dot{
+    width:8px; height:8px; margin-left:-4px; top:8px;
+    background:var(--card); box-shadow:0 0 0 1.5px var(--rail);
+  }
+  .tl-row.travel .tl-rail::before{
+    background:transparent;
+    border-left:2px dashed var(--rail);
+    margin-left:-1px; width:0;
+  }
+  .tl-row.travel .tl-dot{ display:none; }
+  .tl-body{ padding-bottom:16px; min-width:0; }
+  .tl-row:last-child .tl-body{ padding-bottom:2px; }
+  .tl-title{ font-weight:650; font-size:15.5px; line-height:1.35; }
+  .tl-sub{ font-size:13px; color:var(--muted); }
+  .tl-row.quiet .tl-title{ font-weight:500; color:var(--muted); font-size:14px; }
+  .tl-row.travel .tl-body{ padding:1px 0 14px; }
+  .tl-travel{
+    display:inline-flex; align-items:center; gap:7px;
+    font-size:12.5px; color:var(--faint);
+  }
+  .tl-travel .tmode{
+    border:1px solid var(--line);
+    border-radius:4px; padding:1px 6px;
+    background:var(--card-2);
+    font-size:11px; letter-spacing:.05em; text-transform:uppercase;
+  }
+  .pricepill{
+    font-size:12.5px; color:var(--muted);
+    white-space:nowrap;
+  }
+  .tl-head-line{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .bookedref{
+    font-size:11.5px; color:var(--tide-ink);
+    background:var(--tide-soft);
+    border:1px solid var(--tide);
+    border-radius:4px; padding:1px 7px;
+    letter-spacing:.04em;
+  }
+
+  /* summary */
+  .summary{ padding:22px; }
+  .summary h3{ margin:0 0 14px; font-size:20px; letter-spacing:.06em; }
+  .sumtable{ width:100%; border-collapse:collapse; font-size:15px; }
+  .sumtable td{ padding:7px 0; border-bottom:1px dashed var(--line-soft); }
+  .sumtable td:last-child{ text-align:right; font-weight:600; }
+  .sumtable tr.total td{ border-bottom:none; padding-top:12px; font-size:17px; font-weight:700; }
+  .verdict{ margin-top:14px; padding:12px 14px; border-radius:8px; font-size:14.5px; }
+  .verdict.ok{ background:var(--tide-soft); color:var(--tide-ink); }
+  .verdict.over{ background:var(--bad-soft); color:var(--bad); }
+  .plan-ctas{ margin-top:20px; display:flex; flex-wrap:wrap; gap:12px; }
+  .unplaced{ margin-top:16px; font-size:14px; color:var(--muted); }
+  .unplaced strong{ color:var(--ink); }
+  .plangrid{ display:grid; grid-template-columns:1fr 320px; gap:18px; align-items:start; }
+  @media (max-width:860px){ .plangrid{ grid-template-columns:1fr; } }
+  .sticky-side{ position:sticky; top:16px; }
+
+  /* ---------- budget bar ---------- */
+  .bar{
+    position:fixed; left:0; right:0; bottom:0;
+    z-index:40;
+    background:var(--card);
+    border-top:1px solid var(--line);
+    box-shadow:0 -8px 24px rgba(20,51,59,.12);
+  }
+  .bar[hidden]{ display:none; }
+  .barin{
+    max-width:1040px; margin:0 auto; padding:12px 20px;
+    display:flex; align-items:center; gap:18px;
+  }
+  .meter{ flex:1; min-width:0; }
+  .meter .mlabels{
+    display:flex; justify-content:space-between; gap:10px;
+    font-size:13px; color:var(--muted); margin-bottom:5px;
+  }
+  .meter .mlabels .spend{ color:var(--ink); font-weight:600; }
+  .mtrack{
+    height:8px; border-radius:99px;
+    background:var(--line-soft);
+    overflow:hidden;
+  }
+  .mfill{
+    height:100%; width:0%;
+    background:var(--tide);
+    border-radius:99px;
+    transition:width .25s ease;
+  }
+  .mfill.warn{ background:var(--sun); }
+  .mfill.over{ background:var(--bad); }
+  .bar .cta{ padding:11px 20px; flex:none; }
+  @media (max-width:620px){
+    .barin{ flex-wrap:wrap; gap:10px; }
+    .meter{ flex-basis:100%; }
+  }
+
+  /* ---------- booking overlay ---------- */
+  .overlay{
+    position:fixed; inset:0; z-index:60;
+    background:rgba(9,24,27,.55);
+    display:flex; align-items:center; justify-content:center;
+    padding:20px;
+  }
+  .overlay[hidden]{ display:none; }
+  .sheet{
+    width:min(560px,100%);
+    max-height:84vh;
+    display:flex; flex-direction:column;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    box-shadow:var(--shadow);
+  }
+  .sheet header{
+    padding:20px 24px 12px;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .sheet header h3{ margin:0; font-size:22px; letter-spacing:.05em; }
+  .sheet header p{ margin:6px 0 0; font-size:14px; color:var(--muted); }
+  .booklist{
+    list-style:none; margin:0; padding:12px 24px;
+    overflow-y:auto; flex:1;
+  }
+  .booklist li{
+    display:flex; align-items:center; gap:12px;
+    padding:9px 0;
+    border-bottom:1px dashed var(--line-soft);
+    font-size:14.5px;
+  }
+  .booklist li:last-child{ border-bottom:none; }
+  .booklist .bwhat{ flex:1; min-width:0; }
+  .booklist .bday{ color:var(--faint); font-size:12px; display:block; }
+  .bstate{ font-size:12.5px; white-space:nowrap; color:var(--muted); }
+  .bstate.done{ color:var(--tide-ink); font-weight:600; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .bdot{
+    width:14px; height:14px; flex:none; border-radius:50%;
+    background:var(--line-soft);
+  }
+  .bdot.busy{
+    background:transparent;
+    border:2px solid var(--line);
+    border-top-color:var(--tide);
+    animation:spin .8s linear infinite;
+  }
+  .bdot.done{
+    background:var(--tide);
+    position:relative;
+  }
+  .bdot.done::after{
+    content:"✓"; color:var(--card);
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:9px; font-weight:700;
+  }
+  .sheet footer{
+    padding:16px 24px 20px;
+    border-top:1px solid var(--line-soft);
+    display:flex; align-items:center; gap:14px;
+  }
+  .allbooked{
+    display:none;
+    align-items:center; gap:10px;
+    color:var(--tide-ink); font-weight:700;
+    font-size:15px; letter-spacing:.06em; text-transform:uppercase;
+  }
+  .sheet.finished .allbooked{ display:inline-flex; }
+
+  footer.page{
+    margin-top:60px;
+    padding:24px 0 8px;
+    border-top:1px solid var(--line);
+    color:var(--faint);
+    font-size:13px;
+  }
+</style>
+
+<header class="wrap">
+  <div class="brandrow">
+    <svg class="brandmark" width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+      <circle cx="17" cy="17" r="15.5" fill="none" stroke="var(--tide)" stroke-width="2"/>
+      <path d="M8 22 C13 22 13 12 18 12 S 24 17 27 13" fill="none" stroke="var(--tide)" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="8" cy="22" r="2.6" fill="var(--tide)"/>
+      <circle cx="27" cy="13" r="2.6" fill="var(--sun)"/>
+    </svg>
+    <span class="brand disp">Way<em>line</em></span>
+  </div>
+  <div class="hero">
+    <h1 class="disp">Your whole holiday, on one clean timetable<span class="amp">.</span></h1>
+    <p class="lede">Tell Wayline where you're going and what you'd love to do. It clusters your picks by neighbourhood, times the travel between them, slots in every meal, and books the lot — so all that's left is turning up.</p>
+  </div>
+  <svg class="routeline" viewBox="0 0 1000 34" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M10 24 C 200 24 240 8 420 8 S 660 26 800 26 970 10 990 10" fill="none" stroke="var(--rail)" stroke-width="2" stroke-dasharray="1 7" stroke-linecap="round"/>
+    <circle cx="10" cy="24" r="4" fill="var(--tide)"/>
+    <circle cx="420" cy="8" r="4" fill="var(--sun)"/>
+    <circle cx="800" cy="26" r="4" fill="var(--sun)"/>
+    <circle cx="990" cy="10" r="4" fill="var(--tide)"/>
+  </svg>
+</header>
+
+<main class="wrap">
+
+  <!-- ── Station 1 · Setup ─────────────────────────── -->
+  <section id="s-setup" aria-labelledby="h-setup">
+    <div class="station">
+      <span class="stopnum mono" aria-hidden="true">1</span>
+      <h2 id="h-setup" class="disp">The brief</h2>
+      <span class="hint">Where, how long, and what you're happy to spend.</span>
+    </div>
+    <div class="card setup">
+      <div>
+        <div class="field">
+          <label class="flabel" for="dest">Destination</label>
+          <input type="text" id="dest" placeholder="Try Lisbon, Queenstown, Bali or Tokyo…" autocomplete="off" spellcheck="false">
+          <div class="chips" id="destChips" role="group" aria-label="Suggested destinations"></div>
+        </div>
+        <div class="field">
+          <label class="flabel" for="budget">Trip budget <span style="text-transform:none;letter-spacing:0">(activities, meals &amp; getting around)</span></label>
+          <div class="budgetrow">
+            <span class="bval mono" id="budgetVal">£600</span>
+            <input type="range" id="budget" min="200" max="3000" step="25" value="600" aria-label="Trip budget in pounds">
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="field">
+          <span class="flabel" id="lbl-days">Trip length</span>
+          <div class="seg" role="group" aria-labelledby="lbl-days" id="daysSeg">
+            <button type="button" data-days="3" aria-pressed="true">3 days</button>
+            <button type="button" data-days="4" aria-pressed="false">4 days</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="flabel" id="lbl-pace">Pace</span>
+          <div class="seg" role="group" aria-labelledby="lbl-pace" id="paceSeg">
+            <button type="button" data-pace="relaxed" aria-pressed="false">Relaxed</button>
+            <button type="button" data-pace="balanced" aria-pressed="true">Balanced</button>
+            <button type="button" data-pace="packed" aria-pressed="false">Packed</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="flabel" id="lbl-meals">Let Wayline book my…</span>
+          <div class="mealtoggles" role="group" aria-labelledby="lbl-meals" id="mealToggles">
+            <button type="button" class="chip" data-meal="breakfast" aria-pressed="true">Breakfast</button>
+            <button type="button" class="chip" data-meal="lunch" aria-pressed="true">Lunch</button>
+            <button type="button" class="chip" data-meal="dinner" aria-pressed="true">Dinner</button>
+          </div>
+        </div>
+        <div class="setup-cta">
+          <button type="button" class="cta" id="findBtn">Show me what's on →</button>
+          <span class="note">Prices in GBP · availability simulated</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Station 2 · Pick ──────────────────────────── -->
+  <section id="s-pick" hidden aria-labelledby="h-pick">
+    <div class="station">
+      <span class="stopnum mono" aria-hidden="true">2</span>
+      <h2 id="h-pick" class="disp">Pick what excites you</h2>
+    </div>
+    <div class="pickhead">
+      <span class="capacity" id="capacityHint"></span>
+    </div>
+    <div class="filters" id="catFilters" role="group" aria-label="Filter by category"></div>
+    <div class="grid" id="actGrid"></div>
+  </section>
+
+  <!-- ── Station 3 · Itinerary ─────────────────────── -->
+  <section id="s-plan" hidden aria-labelledby="h-plan">
+    <div class="station">
+      <span class="stopnum mono" aria-hidden="true">3</span>
+      <h2 id="h-plan" class="disp">Your timetable</h2>
+      <span class="hint" id="planHint"></span>
+    </div>
+    <div class="plangrid">
+      <div class="planwrap" id="planDays"></div>
+      <div class="sticky-side">
+        <div class="card summary">
+          <h3 class="disp">The maths</h3>
+          <table class="sumtable mono" id="sumTable"></table>
+          <div class="verdict" id="verdict"></div>
+          <div class="plan-ctas">
+            <button type="button" class="cta" id="bookBtn">Book everything</button>
+            <button type="button" class="cta secondary" id="editBtn">Adjust picks</button>
+          </div>
+          <p class="unplaced" id="unplaced" hidden></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="page">
+    Wayline is a working prototype of the pitch — activities, restaurant availability, travel times and bookings are simulated with realistic sample data. No real reservations are made.
+  </footer>
+</main>
+
+<!-- sticky budget bar -->
+<div class="bar" id="bar" hidden>
+  <div class="barin">
+    <div class="meter">
+      <div class="mlabels">
+        <span class="spend mono" id="mSpend"></span>
+        <span class="mono" id="mBudget"></span>
+      </div>
+      <div class="mtrack"><div class="mfill" id="mFill"></div></div>
+    </div>
+    <span class="pricepill" id="mNote"></span>
+    <button type="button" class="cta" id="barCta">Build my itinerary →</button>
+  </div>
+</div>
+
+<!-- booking overlay -->
+<div class="overlay" id="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="bookTitle">
+  <div class="sheet" id="sheet">
+    <header>
+      <h3 id="bookTitle" class="disp">Booking your trip…</h3>
+      <p id="bookSub">Checking real-time availability and confirming each reservation.</p>
+    </header>
+    <ul class="booklist" id="bookList"></ul>
+    <footer>
+      <span class="allbooked disp">◉ All booked — see you there</span>
+      <button type="button" class="cta secondary" id="closeBook" style="margin-left:auto" disabled>Back to itinerary</button>
+    </footer>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════ data ═══════════════════ */
+const CATS = {
+  adventure:{ label:"Adventure" },
+  culture:  { label:"Culture" },
+  food:     { label:"Food & drink" },
+  nature:   { label:"Nature & views" },
+  nightlife:{ label:"Nightlife" },
+};
+
+// activity: [name, cat, duration min, price £, zone index, note]
+const DESTS = {
+  lisbon: {
+    name:"Lisbon",
+    zones:["Alfama & Castle","Baixa & Riverfront","Bairro Alto","Alcântara & LX","Belém & the coast"],
+    activities:[
+      ["Jet ski hire on the Tagus","adventure",60,79,1,"Skim under the Ponte 25 de Abril after a marina briefing."],
+      ["Surf lesson at Carcavelos","adventure",150,45,4,"Board, wetsuit and a patient coach on Lisbon's home beach."],
+      ["Dawn stand-up paddle","adventure",90,32,1,"Glass-flat river, pink sky, coffee waiting on the pontoon."],
+      ["Tram 28 & Alfama walking tour","culture",105,18,0,"Rattle up the hill, then wander the lanes with a local guide."],
+      ["São Jorge Castle ramparts","culture",90,15,0,"Peacocks, cannons and the best free-standing view in town."],
+      ["MAAT & the riverside walk","culture",90,11,3,"Swooping museum roof you can walk over, art underneath."],
+      ["Pastéis de Belém counter stop","food",45,6,4,"Warm custard tarts from the 1837 original. Cinnamon on top."],
+      ["Time Out Market tasting crawl","food",90,26,1,"One hall, thirty counters — graze the city's best kitchens."],
+      ["Petiscos & wine in Bairro Alto","food",120,34,2,"Small plates, big Douro pours, tiled tavern walls."],
+      ["Sunset sail on the Tagus","nature",120,39,1,"Two hours under sail as the bridge turns gold."],
+      ["Sintra & Pena Palace half-day","nature",300,58,4,"Misty forest, candy-coloured palace, minibus and tickets sorted."],
+      ["Fado night in a tasca","nightlife",120,36,0,"Candlelit, close-up and quietly devastating. Port included."],
+    ],
+    eats:{
+      breakfast:[["Dear Breakfast",1,12],["Café Janis",2,13],["Fábrica Coffee Roasters",1,9]],
+      lunch:[["O Trevo",2,11],["Taberna Sal Grosso",0,19],["Cervejaria Ramiro",1,28]],
+      dinner:[["Taberna da Rua das Flores",2,29],["A Cevicheria",2,38],["Ponto Final",1,33]],
+    },
+  },
+  queenstown: {
+    name:"Queenstown",
+    zones:["Town centre","Queenstown Hill","Frankton & the lake","Gibbston Valley","Fiordland & beyond"],
+    activities:[
+      ["Kawarau Bridge bungy","adventure",180,108,3,"The world's first commercial bungy. 43 metres of yes."],
+      ["Shotover Jet canyon run","adventure",90,79,2,"360° spins between canyon walls, centimetres to spare."],
+      ["Paraglide off Coronet Peak","adventure",150,125,2,"Tandem launch, fifteen silent minutes above the basin."],
+      ["Skyline gondola & luge","adventure",120,42,0,"Ride up, race down. Repeat until dignity runs out."],
+      ["Jet ski hire on Lake Wakatipu","adventure",60,85,2,"Full throttle on glacier-blue water, mountains all round."],
+      ["TSS Earnslaw steamship cruise","culture",105,40,0,"A 1912 coal-fired lady of the lake, engine room open."],
+      ["Gibbston Valley wine tasting","food",150,45,3,"Pinot noir in a cave cellar, platters in the sun."],
+      ["Fergburger & Mrs Ferg gelato run","food",45,12,0,"The queue is part of it. Worth every minute."],
+      ["Queenstown Hill time walk","nature",150,0,1,"Two hours up through pines to the Basket of Dreams."],
+      ["Milford Sound day trip","nature",300,145,4,"Coach, cruise, waterfalls taller than skyscrapers."],
+      ["Onsen hot pools at twilight","nature",90,52,1,"Private cedar tub, retractable wall, river far below."],
+      ["Little Blackwood lakefront bar","nightlife",120,24,0,"Sharp cocktails, jetty lights, mountain silhouettes."],
+    ],
+    eats:{
+      breakfast:[["Bespoke Kitchen",0,14],["Yonder",0,12],["Odd Saint",1,15]],
+      lunch:[["Taco Medic",0,13],["The Boatshed Café",2,18],["Gibbston Tavern",3,21]],
+      dinner:[["Rātā",0,44],["The Cow Pizzeria",0,26],["Public Kitchen & Bar",0,35]],
+    },
+  },
+  bali: {
+    name:"Bali",
+    zones:["Canggu","Seminyak","Ubud & the ridges","Uluwatu & the Bukit","Nusa islands"],
+    activities:[
+      ["Surf lesson at Batu Bolong","adventure",120,25,0,"Mellow rollers, warm water, board included."],
+      ["White-water raft the Ayung","adventure",240,38,2,"Grade II–III rapids through jungle gorges, lunch after."],
+      ["Mount Batur sunrise trek","adventure",300,42,2,"2 a.m. start, headtorches, eggs steamed in the crater."],
+      ["Jet ski at Tanjung Benoa","adventure",45,30,3,"Fifteen loud, happy minutes off the beach."],
+      ["Snorkel Nusa Penida","nature",300,65,4,"Manta rays if you're lucky, crystal bays if you're not."],
+      ["Tegalalang rice terraces","nature",90,8,2,"Stepped green amphitheatre, best before the heat."],
+      ["Tibumana waterfall dip","nature",120,6,2,"A quiet curtain of water and a jungle pool to yourself."],
+      ["Ubud Monkey Forest & palace","culture",105,10,2,"Hold your sunglasses tight. Temples in the trees."],
+      ["Balinese cooking class","food",180,29,2,"Market run first, then sambal from scratch."],
+      ["Uluwatu temple & kecak fire dance","culture",150,14,3,"Clifftop sunset, a hundred chanting voices, real fire."],
+      ["Beach club day bed at the Bukit","nightlife",240,45,3,"Pool, DJ, sunset — minimum spend counts toward lunch."],
+      ["Seminyak night market graze","food",90,12,1,"Satay smoke, sweet martabak, plastic stools. Perfect."],
+    ],
+    eats:{
+      breakfast:[["Crate Café",0,9],["Milk & Madu",0,10],["Sisterfields",1,13]],
+      lunch:[["Warung Nia",1,11],["La Baracca",2,14],["Single Fin",3,18]],
+      dinner:[["Locavore To Go",2,36],["Mama San",1,29],["Ji Terrace by the Sea",0,27]],
+    },
+  },
+  tokyo: {
+    name:"Tokyo",
+    zones:["Shibuya & Shinjuku","Asakusa & the east","Ginza & the bay","Ueno & the north","Takao & day-trip country"],
+    activities:[
+      ["Go-kart street tour","adventure",120,75,0,"Costumed convoy through neon canyons. Licence sorted in advance."],
+      ["teamLab Planets","culture",120,26,2,"Barefoot through water, mirrors and infinite flowers."],
+      ["Tsukiji outer market breakfast crawl","food",90,22,2,"Tamagoyaki on sticks, tuna bowls, knife shops."],
+      ["Sumo morning practice viewing","culture",120,35,1,"Silent stable-side seats while the rikishi train."],
+      ["Sensō-ji & Nakamise street","culture",90,0,1,"Incense smoke, snack stalls, the great red lantern."],
+      ["Sushi-making class in Ginza","food",150,55,2,"A chef teaches you knife angles; you eat your homework."],
+      ["Golden Gai bar hop","nightlife",150,30,0,"Six-seat bars stacked in lantern-lit alleys."],
+      ["Private karaoke box","nightlife",120,18,0,"Two hours, tambourines, no witnesses."],
+      ["Mount Takao hike & cable car","nature",300,15,4,"An hour from town: forest trails, mountaintop soba."],
+      ["Akihabara arcade evening","nightlife",120,15,3,"Crane games, rhythm games, five floors of glorious noise."],
+      ["Ueno museums & park stroll","culture",150,12,3,"National treasures, then coffee under the ginkgos."],
+      ["Shibuya crossing & Harajuku walk","culture",120,0,0,"The scramble, Cat Street, and Meiji shrine's quiet forest."],
+    ],
+    eats:{
+      breakfast:[["Onibus Coffee",0,8],["Suke6 Diner",1,12],["Bongen Coffee",2,9]],
+      lunch:[["Afuri Ramen",0,12],["Tempura Tendon Tenya",1,10],["Ginza Kagari",2,16]],
+      dinner:[["Uoshin Nogizaka",0,32],["Gyukatsu Motomura",0,19],["Asakusa Imahan",1,48]],
+    },
+  },
+};
+
+const GENERIC = {
+  zones:["Old town","Harbourfront","Market district","Green quarter","Out of town"],
+  activities:[
+    ["Old town walking tour","culture",120,14,0,"Two hours of back lanes, legends and the best viewpoints."],
+    ["Harbour kayak","adventure",120,35,1,"Paddle the waterfront at eye level with the boats."],
+    ["Jet ski hire","adventure",60,70,1,"Half an hour of throttle therapy off the main beach."],
+    ["Food market tasting walk","food",90,20,2,"Graze the stalls with someone who knows every vendor."],
+    ["City museum","culture",90,12,0,"The whole story in ninety minutes, air-conditioned."],
+    ["Sunset viewpoint hike","nature",120,0,3,"An easy climb timed for golden hour."],
+    ["Waterfront cycle loop","nature",120,18,1,"Flat, breezy and mostly car-free. Bikes included."],
+    ["Local cooking class","food",180,40,2,"Shop the market, cook the classics, eat the lot."],
+    ["Boat trip along the coast","nature",180,45,1,"Coves and swim stops, skipper's commentary optional."],
+    ["Rooftop bar at golden hour","nightlife",90,22,2,"Reserved seats facing west. Arrive thirsty."],
+    ["Live music in the old quarter","nightlife",150,25,0,"A cellar venue locals actually go to."],
+    ["Countryside day trip","nature",300,60,4,"Villages, views and a long lazy stop for lunch."],
+  ],
+  eats:{
+    breakfast:[["The Corner Bakery",0,11],["Harbour Coffee House",1,10],["Petal & Crumb",2,13]],
+    lunch:[["Market Hall Counter",2,16],["The Quay Kitchen",1,21],["Old Town Bistro",0,18]],
+    dinner:[["The Lantern Room",0,34],["Driftwood",1,29],["Vine & Ember",2,31]],
+  },
+};
+
+/* ═══════════════════ pure logic ═══════════════════ */
+const PACE_CAP = { relaxed:2, balanced:3, packed:4 };
+const DAY_END = 22*60 + 30;
+const MEAL_EST = { breakfast:12, lunch:16, dinner:32 };
+
+const fmtT = m => String(Math.floor(m/60)).padStart(2,"0") + ":" + String(m%60).padStart(2,"0");
+const gbp  = n => "£" + Math.round(n).toLocaleString("en-GB");
+const roundQ = m => Math.ceil(m/5)*5;
+
+function travel(fromZone, toZone){
+  if (fromZone == null) return { min:0, cost:0, mode:null };
+  const d = Math.abs(fromZone - toZone);
+  const modes = ["walk","metro","taxi","taxi","train"];
+  return {
+    min: d === 0 ? 8 : 8 + 12*d,
+    cost: d === 0 ? 0 : 2 + 3.5*d,
+    mode: modes[d],
+  };
+}
+
+function pickEat(dest, meal, nearZone, dayIdx){
+  const list = dest.eats[meal].map(([name, zone, price]) => ({name, zone, price}));
+  list.sort((a,b) => Math.abs(a.zone - nearZone) - Math.abs(b.zone - nearZone));
+  const near = list.slice(0, Math.min(2, list.length));
+  return near[dayIdx % near.length];
+}
+
+function schedule({activities, days, pace, meals, dest}){
+  const cap = PACE_CAP[pace];
+  const pool = [...activities].sort((a,b) => a.zone - b.zone || a.dur - b.dur);
+  const plan = [];
+
+  for (let d = 0; d < days; d++){
+    const ev = [];
+    let t = 9*60, loc = null, count = 0;
+    let hadLunch = false, hadDinner = false;
+    ev.push({ kind:"quiet", t, title:"Wake up", sub:"Hotel — easy start" });
+
+    const anchorZone = pool.length ? pool[0].zone : 1;
+    if (meals.breakfast){
+      const v = pickEat(dest, "breakfast", anchorZone, d);
+      t = 10*60;
+      ev.push({ kind:"meal", meal:"Breakfast", t, dur:45, venue:v });
+      t += 45; loc = v.zone;
+    } else {
+      t = 10*60; loc = anchorZone;
+    }
+
+    while (pool.length && count < cap){
+      if (meals.lunch && !hadLunch && t >= 11*60+30 && t <= 15*60+30){
+        const v = pickEat(dest, "lunch", loc, d);
+        const s = Math.max(roundQ(t + travel(loc, v.zone).min), 12*60);
+        ev.push({ kind:"meal", meal:"Lunch", t:s, dur:60, venue:v });
+        t = s + 60; loc = v.zone; hadLunch = true;
+      }
+      if (meals.dinner && !hadDinner && t >= 17*60+45){
+        const v = pickEat(dest, "dinner", loc, d);
+        const s = Math.max(roundQ(t + 20), 18*60+30);
+        ev.push({ kind:"meal", meal:"Dinner", t:s, dur:90, venue:v });
+        t = s + 90; loc = v.zone; hadDinner = true;
+      }
+
+      // nightlife waits for the evening: prefer a daytime pick, or jump ahead
+      let idx = 0;
+      if (pool[0].cat === "nightlife" && t < 17*60){
+        const alt = pool.findIndex(x => x.cat !== "nightlife");
+        if (alt >= 0) idx = alt;
+      }
+      const a = pool[idx];
+      if (a.cat === "nightlife" && t < 17*60) t = 17*60;
+
+      const trav = travel(loc, a.zone);
+      const start = roundQ(t + trav.min);
+      if (start + a.dur > DAY_END) break;
+      if (trav.mode) ev.push({ kind:"travel", t, ...trav, toName:dest.zones[a.zone] });
+      ev.push({ kind:"act", t:start, ...a });
+      t = start + a.dur; loc = a.zone; count++;
+      pool.splice(idx, 1);
+
+      if (meals.lunch && !hadLunch && t >= 12*60+15 && t <= 15*60+30){
+        const v = pickEat(dest, "lunch", loc, d);
+        const s = roundQ(t + 15);
+        ev.push({ kind:"meal", meal:"Lunch", t:s, dur:60, venue:v });
+        t = s + 60; loc = v.zone; hadLunch = true;
+      }
+    }
+
+    if (meals.lunch && !hadLunch && t <= 15*60){
+      const v = pickEat(dest, "lunch", loc ?? 1, d);
+      const s = Math.max(roundQ(t + 20), 12*60+45);
+      ev.push({ kind:"meal", meal:"Lunch", t:s, dur:60, venue:v });
+      t = s + 60; loc = v.zone; hadLunch = true;
+    }
+    if (meals.dinner && !hadDinner){
+      const v = pickEat(dest, "dinner", loc ?? 1, d);
+      const s = Math.max(roundQ(t + 25), 19*60);
+      if (s <= 21*60+30){
+        ev.push({ kind:"meal", meal:"Dinner", t:s, dur:90, venue:v });
+        t = s + 90; loc = v.zone; hadDinner = true;
+      }
+    }
+    ev.push({ kind:"quiet", t: roundQ(t + 10), title:"Back to the hotel", sub:"Tomorrow's timetable is already set" });
+    plan.push(ev);
+  }
+  return { plan, unplaced: pool };
+}
+
+function totals(plan){
+  let acts = 0, meals = 0, transport = 0;
+  for (const day of plan) for (const e of day){
+    if (e.kind === "act") acts += e.price;
+    else if (e.kind === "meal") meals += e.venue.price;
+    else if (e.kind === "travel") transport += e.cost;
+  }
+  return { acts, meals, transport: Math.round(transport), total: Math.round(acts + meals + transport) };
+}
+
+/* ═══════════════════ UI ═══════════════════ */
+(function(){
+  const $ = id => document.getElementById(id);
+  const state = {
+    destKey:null, dest:null, destLabel:"",
+    days:3, pace:"balanced",
+    budget:600,
+    meals:{ breakfast:true, lunch:true, dinner:true },
+    selected:new Set(),
+    filter:"all",
+    step:1,
+    result:null,
+    booked:false,
+    refs:new Map(),
+  };
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ── setup controls ── */
+  const destInput = $("dest");
+  const chipWrap = $("destChips");
+  Object.entries(DESTS).forEach(([key, d]) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.textContent = d.name;
+    b.setAttribute("aria-pressed","false");
+    b.addEventListener("click", () => {
+      destInput.value = d.name;
+      [...chipWrap.children].forEach(c => c.setAttribute("aria-pressed", c === b ? "true" : "false"));
+    });
+    chipWrap.appendChild(b);
+  });
+  destInput.addEventListener("input", () => {
+    const v = destInput.value.trim().toLowerCase();
+    [...chipWrap.children].forEach(c =>
+      c.setAttribute("aria-pressed", c.textContent.toLowerCase() === v ? "true" : "false"));
+  });
+
+  function segWire(el, attr, cb){
+    el.addEventListener("click", e => {
+      const b = e.target.closest("button"); if (!b) return;
+      [...el.children].forEach(c => c.setAttribute("aria-pressed", c === b ? "true" : "false"));
+      cb(b.dataset[attr]);
+    });
+  }
+  segWire($("daysSeg"), "days", v => { state.days = +v; afterSetupChange(); });
+  segWire($("paceSeg"), "pace", v => { state.pace = v; afterSetupChange(); });
+
+  $("mealToggles").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    const on = b.getAttribute("aria-pressed") !== "true";
+    b.setAttribute("aria-pressed", String(on));
+    state.meals[b.dataset.meal] = on;
+    afterSetupChange();
+  });
+
+  const budgetIn = $("budget");
+  budgetIn.addEventListener("input", () => {
+    state.budget = +budgetIn.value;
+    $("budgetVal").textContent = gbp(state.budget);
+    updateBar();
+  });
+
+  $("findBtn").addEventListener("click", () => {
+    const raw = destInput.value.trim();
+    if (!raw){ destInput.focus(); destInput.placeholder = "First tell us where you're headed…"; return; }
+    const key = raw.toLowerCase();
+    if (DESTS[key]){
+      state.destKey = key; state.dest = DESTS[key]; state.destLabel = DESTS[key].name;
+    } else {
+      state.destKey = "generic";
+      state.dest = { name: raw, zones: GENERIC.zones, activities: GENERIC.activities, eats: GENERIC.eats };
+      state.destLabel = raw;
+    }
+    state.selected.clear();
+    state.filter = "all";
+    state.result = null; state.booked = false; state.refs.clear();
+    $("s-plan").hidden = true;
+    buildCatalog();
+    setStep(2);
+    $("s-pick").scrollIntoView({ block:"start" });
+  });
+
+  function afterSetupChange(){
+    if (state.step >= 2){ updateCapacity(); updateBar(); }
+    if (state.step >= 3 && state.result){ rebuildPlan(false); }
+  }
+
+  /* ── catalog ── */
+  function activityObjects(){
+    return state.dest.activities.map((a, i) => ({
+      id: state.destKey + "-" + i,
+      name:a[0], cat:a[1], dur:a[2], price:a[3], zone:a[4], note:a[5],
+    }));
+  }
+
+  function buildCatalog(){
+    $("h-pick").textContent = "Pick what excites you in " + state.destLabel;
+    const filters = $("catFilters");
+    filters.innerHTML = "";
+    const mk = (key, label) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "chip"; b.textContent = label;
+      b.setAttribute("aria-pressed", String(state.filter === key));
+      b.addEventListener("click", () => {
+        state.filter = key;
+        [...filters.children].forEach(c => c.setAttribute("aria-pressed","false"));
+        b.setAttribute("aria-pressed","true");
+        renderGrid();
+      });
+      filters.appendChild(b);
+    };
+    mk("all","Everything");
+    Object.entries(CATS).forEach(([k, c]) => mk(k, c.label));
+    renderGrid();
+    updateCapacity();
+    updateBar();
+  }
+
+  function renderGrid(){
+    const grid = $("actGrid");
+    grid.innerHTML = "";
+    for (const a of activityObjects()){
+      if (state.filter !== "all" && a.cat !== state.filter) continue;
+      const btn = document.createElement("button");
+      btn.type = "button"; btn.className = "act";
+      btn.setAttribute("aria-pressed", String(state.selected.has(a.id)));
+      const hrs = a.dur >= 60 ? (a.dur/60).toFixed(a.dur % 60 ? 1 : 0) + " h" : a.dur + " min";
+      btn.innerHTML =
+        '<span class="tick" aria-hidden="true">✓</span>' +
+        '<span class="aname">' + a.name + '</span>' +
+        '<span class="anote">' + a.note + '</span>' +
+        '<span class="zone">' + state.dest.zones[a.zone] + '</span>' +
+        '<span class="ameta"><span class="cattag">' + CATS[a.cat].label + '</span>' +
+        '<span class="mono">' + hrs + '</span>' +
+        '<span class="price mono">' + (a.price ? gbp(a.price) : "Free") + '</span></span>';
+      btn.addEventListener("click", () => {
+        if (state.selected.has(a.id)) state.selected.delete(a.id);
+        else state.selected.add(a.id);
+        btn.setAttribute("aria-pressed", String(state.selected.has(a.id)));
+        state.booked = false; state.refs.clear();
+        if (state.step >= 3){
+          if (state.selected.size) rebuildPlan(false);
+          else { state.result = null; setStep(2); }
+        }
+        updateBar();
+      });
+      grid.appendChild(btn);
+    }
+  }
+
+  function capacity(){ return state.days * PACE_CAP[state.pace]; }
+  function updateCapacity(){
+    $("capacityHint").textContent =
+      "At a " + state.pace + " pace you've room for about " + capacity() +
+      " activities across " + state.days + " days — Wayline handles the meals and the moving around.";
+  }
+
+  /* ── budget bar ── */
+  function selectedActs(){
+    return activityObjects().filter(a => state.selected.has(a.id));
+  }
+  function estimate(){
+    if (state.result) return totals(state.result.plan).total;
+    const actSum = selectedActs().reduce((s,a) => s + a.price, 0);
+    const mealDay = Object.entries(state.meals).reduce((s,[k,on]) => s + (on ? MEAL_EST[k] : 0), 0);
+    return Math.round(actSum + state.days * (mealDay + 9));
+  }
+  function updateBar(){
+    const bar = $("bar");
+    if (state.step < 2){ bar.hidden = true; return; }
+    bar.hidden = false;
+    const est = estimate();
+    const pct = Math.min(100, est / state.budget * 100);
+    const fill = $("mFill");
+    fill.style.width = pct + "%";
+    fill.className = "mfill" + (est > state.budget ? " over" : pct > 85 ? " warn" : "");
+    $("mSpend").textContent = (state.result ? "" : "≈ ") + gbp(est) + " · " + state.selected.size + " picked";
+    $("mBudget").textContent = "budget " + gbp(state.budget);
+    const over = est - state.budget;
+    $("mNote").textContent = over > 0
+      ? gbp(over) + " over — trim a pick or nudge the budget"
+      : gbp(-over) + " left" + (state.result ? "" : " (incl. est. meals & transport)");
+    $("mNote").style.color = over > 0 ? "var(--bad)" : "var(--muted)";
+    const cta = $("barCta");
+    if (state.booked){ cta.textContent = "Booked ✓"; cta.disabled = true; }
+    else if (state.step === 2){ cta.textContent = "Build my itinerary →"; cta.disabled = state.selected.size === 0; }
+    else { cta.textContent = "Book everything"; cta.disabled = false; }
+  }
+  $("barCta").addEventListener("click", () => {
+    if (state.step === 2) rebuildPlan(true);
+    else openBooking();
+  });
+
+  /* ── itinerary ── */
+  function rebuildPlan(scroll){
+    if (!state.selected.size) return;
+    state.result = schedule({
+      activities:selectedActs(), days:state.days, pace:state.pace,
+      meals:state.meals, dest:state.dest,
+    });
+    state.booked = false; state.refs.clear();
+    renderPlan();
+    setStep(3);
+    updateBar();
+    if (scroll) $("s-plan").scrollIntoView({ block:"start" });
+  }
+
+  function renderPlan(){
+    const { plan, unplaced } = state.result;
+    $("planHint").textContent = state.days + " days in " + state.destLabel + " · " + state.pace + " pace";
+    const wrap = $("planDays");
+    wrap.innerHTML = "";
+    plan.forEach((day, i) => {
+      const card = document.createElement("div");
+      card.className = "card daycard";
+      const nActs = day.filter(e => e.kind === "act").length;
+      const daySpend = day.reduce((s,e) =>
+        s + (e.kind === "act" ? e.price : e.kind === "meal" ? e.venue.price : e.kind === "travel" ? e.cost : 0), 0);
+      let html = '<div class="dayhead"><h3 class="disp">Day ' + (i+1) + '</h3>' +
+        '<span class="daysum mono">' + nActs + (nActs === 1 ? " activity" : " activities") +
+        ' · ' + gbp(daySpend) + '</span></div><ul class="timeline">';
+      for (const e of day){
+        if (e.kind === "travel"){
+          html += '<li class="tl-row travel"><span class="tl-time mono"></span><span class="tl-rail"></span>' +
+            '<span class="tl-body"><span class="tl-travel"><span class="tmode">' + e.mode + '</span>' +
+            e.min + ' min to ' + e.toName + (e.cost ? ' · ' + gbp(e.cost) : "") + '</span></span></li>';
+          continue;
+        }
+        const cls = e.kind === "meal" ? "meal" : e.kind === "quiet" ? "quiet" : "";
+        let title = "", sub = "", pill = "", ref = "";
+        if (e.kind === "act"){
+          title = e.name;
+          sub = state.dest.zones[e.zone] + " · until " + fmtT(e.t + e.dur);
+          pill = '<span class="pricepill mono">' + (e.price ? gbp(e.price) : "Free") + '</span>';
+          const r = state.refs.get("a-" + e.id);
+          if (r) ref = '<span class="bookedref mono">Booked · ' + r + '</span>';
+        } else if (e.kind === "meal"){
+          title = e.meal + " — " + e.venue.name;
+          sub = state.dest.zones[e.venue.zone] + " · table for two held until " + fmtT(e.t + 15);
+          pill = '<span class="pricepill mono">≈ ' + gbp(e.venue.price) + '</span>';
+          const r = state.refs.get("m-" + e.meal + "-" + e.t + "-" + e.venue.name);
+          if (r) ref = '<span class="bookedref mono">Booked · ' + r + '</span>';
+        } else {
+          title = e.title; sub = e.sub || "";
+        }
+        html += '<li class="tl-row ' + cls + '"><span class="tl-time mono">' + fmtT(e.t) + '</span>' +
+          '<span class="tl-rail"><span class="tl-dot"></span></span>' +
+          '<span class="tl-body"><span class="tl-head-line"><span class="tl-title">' + title + '</span>' +
+          pill + ref + '</span>' +
+          (sub ? '<span class="tl-sub">' + sub + '</span>' : "") + '</span></li>';
+      }
+      html += "</ul>";
+      card.innerHTML = html;
+      wrap.appendChild(card);
+    });
+
+    const t = totals(plan);
+    $("sumTable").innerHTML =
+      "<tr><td>Activities</td><td>" + gbp(t.acts) + "</td></tr>" +
+      "<tr><td>Meals (est.)</td><td>" + gbp(t.meals) + "</td></tr>" +
+      "<tr><td>Getting around</td><td>" + gbp(t.transport) + "</td></tr>" +
+      '<tr class="total"><td>Trip total</td><td>' + gbp(t.total) + "</td></tr>";
+    const v = $("verdict");
+    if (t.total <= state.budget){
+      v.className = "verdict ok";
+      v.textContent = gbp(state.budget - t.total) + " under budget — room for souvenirs.";
+    } else {
+      v.className = "verdict over";
+      v.textContent = gbp(t.total - state.budget) + " over budget. Drop a pick, ease the pace, or nudge the slider.";
+    }
+    const up = $("unplaced");
+    if (unplaced.length){
+      up.hidden = false;
+      up.innerHTML = "<strong>Didn't fit:</strong> " + unplaced.map(a => a.name).join(", ") +
+        ". Add a day or switch to a " + (state.pace === "packed" ? "longer trip" : "packed pace") + " to squeeze them in.";
+    } else up.hidden = true;
+  }
+
+  $("editBtn").addEventListener("click", () => {
+    state.result = null;
+    setStep(2);
+    $("s-pick").scrollIntoView({ block:"start" });
+  });
+  $("bookBtn").addEventListener("click", openBooking);
+
+  /* ── booking ── */
+  function bookables(){
+    const items = [];
+    state.result.plan.forEach((day, i) => {
+      for (const e of day){
+        if (e.kind === "act")
+          items.push({ key:"a-" + e.id, what:e.name, day:"Day " + (i+1) + " · " + fmtT(e.t) });
+        else if (e.kind === "meal")
+          items.push({ key:"m-" + e.meal + "-" + e.t + "-" + e.venue.name,
+                       what:e.meal + " at " + e.venue.name, day:"Day " + (i+1) + " · " + fmtT(e.t) });
+      }
+    });
+    return items;
+  }
+  const ref = () => "WL-" + Array.from({length:5}, () =>
+    "ABCDEFGHJKMNPQRSTUVWXYZ23456789"[Math.floor(Math.random()*31)]).join("");
+
+  function openBooking(){
+    if (!state.result || state.booked) return;
+    const items = bookables();
+    const list = $("bookList");
+    list.innerHTML = "";
+    const rows = items.map(it => {
+      const li = document.createElement("li");
+      li.innerHTML = '<span class="bdot"></span><span class="bwhat">' + it.what +
+        '<span class="bday mono">' + it.day + '</span></span>' +
+        '<span class="bstate">queued</span>';
+      list.appendChild(li);
+      return li;
+    });
+    $("sheet").classList.remove("finished");
+    $("bookTitle").textContent = "Booking your trip…";
+    $("bookSub").textContent = "Checking real-time availability and confirming " + items.length + " reservations.";
+    $("closeBook").disabled = true;
+    $("overlay").hidden = false;
+
+    let i = 0;
+    const stepMs = reducedMotion ? 0 : Math.min(420, Math.max(180, 5200 / items.length));
+    function confirmNext(){
+      if (i > 0){
+        const done = rows[i-1];
+        const code = ref();
+        state.refs.set(items[i-1].key, code);
+        const dot = done.querySelector(".bdot");
+        dot.classList.remove("busy");
+        dot.classList.add("done");
+        const st = done.querySelector(".bstate");
+        st.textContent = "Confirmed · " + code;
+        st.classList.add("done","mono");
+      }
+      if (i < rows.length){
+        const cur = rows[i];
+        cur.querySelector(".bdot").classList.add("busy");
+        cur.querySelector(".bstate").textContent = "checking availability…";
+        cur.scrollIntoView({ block:"nearest" });
+        i++;
+        setTimeout(confirmNext, stepMs);
+      } else {
+        state.booked = true;
+        $("sheet").classList.add("finished");
+        $("bookTitle").textContent = "You're all set";
+        $("bookSub").textContent = "Every reservation confirmed. Your timetable now carries the booking references.";
+        $("closeBook").disabled = false;
+        renderPlan();
+        updateBar();
+      }
+    }
+    confirmNext();
+  }
+  $("closeBook").addEventListener("click", () => { $("overlay").hidden = true; });
+  $("overlay").addEventListener("click", e => {
+    if (e.target === $("overlay") && !$("closeBook").disabled) $("overlay").hidden = true;
+  });
+
+  /* ── steps ── */
+  function setStep(n){
+    state.step = n;
+    $("s-pick").hidden = state.step < 2;
+    $("s-plan").hidden = state.step < 3 || !state.result;
+    updateBar();
+  }
+})();
+</script>
